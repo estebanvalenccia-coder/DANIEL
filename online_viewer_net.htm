@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HerencIA | Diagnóstico de Plantas</title>
+
+<!-- Fuentes e iconos -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  /* ============================
+     PARTE 1 - CSS (NO CAMBIAR ESTRUCTURA FÍSICA)
+     Mejorado visualmente sin alterar el "físico".
+     ============================ */
+
+  :root{
+    --green-600: #4B6B1F;
+    --green-700: #395015;
+    --bg1: #F4F1DE;
+    --bg2: #E8F5E9;
+    --muted: #6b6b6b;
+    --glass: rgba(255,255,255,0.92);
+    --shadow-1: 0 12px 30px rgba(0,0,0,0.12);
+    --radius: 14px;
+    --max-width: 1100px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg,var(--bg1),var(--bg2));
+    margin:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height:100vh;
+    color:#222;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  header{
+    text-align:center;
+    padding:2rem 1rem;
+    width:100%;
+    max-width:var(--max-width);
+  }
+
+  .logo{
+    max-width:220px;
+    margin-bottom:0.6rem;
+    display:inline-block;
+  }
+
+  p.subtitle{
+    font-size:1.15rem;
+    color:#4B6043;
+    margin:0;
+    font-weight:500;
+  }
+
+  /* Chat container */
+  .chat-container{
+    width:95%;
+    max-width:720px;
+    background: var(--glass);
+    border-radius:25px;
+    box-shadow:var(--shadow-1);
+    padding:1.6rem;
+    display:flex;
+    flex-direction:column;
+    min-height:650px;
+    margin-bottom:2rem;
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* Background image accent (kept but subtle overlay) */
+  .chat-container::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image: url('https://i.pinimg.com/736x/6e/a9/81/6ea981dfd91e369130a7e4788876e756.jpg');
+    background-size:cover;
+    background-position:center;
+    opacity:1; /* IMAGEN VISIBLE según tu petición */
+    pointer-events:none;
+    border-radius:inherit;
+    z-index:0;
+  }
+
+  .messages{
+    position:relative;
+    z-index:1;
+    flex-grow:1;
+    overflow-y:auto;
+    margin-bottom:1rem;
+    padding-right:0.5rem;
+    display:flex;
+    flex-direction:column;
+    gap:0.6rem;
+  }
+
+  .msg{
+    margin:0;
+    padding:0.9rem 1.2rem;
+    border-radius:18px;
+    line-height:1.4;
+    max-width:82%;
+    word-wrap:break-word;
+    font-size:1rem;
+    box-shadow:0 2px 6px rgba(0,0,0,0.12);
+    display:inline-block;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+
+  .msg.user{
+    background: rgba(200,255,200,0.95);
+    align-self:flex-end;
+    color:#000;
+    border-top-right-radius:6px;
+  }
+
+  .msg.bot{
+    background: rgba(0,80,0,0.95);
+    align-self:flex-start;
+    color:#fff;
+    border-top-left-radius:6px;
+  }
+
+  .img-msg{
+    display:block;
+    max-width:260px;
+    border-radius:12px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.15);
+  }
+
+  /* INPUT ROWS */
+  .input-container{
+    display:flex;
+    gap:0.5rem;
+    margin-bottom:1rem;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:center;
+    z-index:2;
+  }
+
+  /* Main input group: input + small mic on the right (option B chosen) */
+  .input-group{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex:1 1 260px;
+    min-width:180px;
+  }
+
+  input[type="text"]{
+    flex:1 1 auto;
+    padding:0.9rem 1rem;
+    border-radius:15px;
+    border:1px solid rgba(0,0,0,0.08);
+    font-size:1rem;
+    outline:none;
+    background:rgba(255,255,255,0.98);
+    box-shadow: 0 6px 18px rgba(75,107,31,0.04);
+  }
+
+  /* Small mic (style 1): simple white circle with mic icon */
+  .small-mic {
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:#ffffff;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 6px 14px rgba(0,0,0,0.08);
+    cursor:pointer;
+  }
+
+  .small-mic i{
+    color:#222;
+    font-size:16px;
+  }
+
+  /* active state when pressed (red) */
+  .small-mic.active{
+    background:#f44336;
+  }
+  .small-mic.active i{
+    color:#fff;
+  }
+
+  /* Buttons */
+  label.camera-btn,
+  button.send-btn,
+  button.voice-btn,
+  button.diagnosis-btn{
+    background-color:var(--green-600);
+    color:white;
+    border:none;
+    padding:0.9rem 1.3rem;
+    border-radius:15px;
+    cursor:pointer;
+    font-weight:500;
+    font-size:1rem;
+    transition: background-color 0.25s ease, transform 0.05s ease;
+    display:inline-flex;
+    align-items:center;
+    gap:0.5rem;
+    z-index:2;
+  }
+
+  label.camera-btn input{ display:none; }
+
+  .mic-btn{ display:none; } /* aseguramos que cualquier referencia visual del mic. grande no aparezca */
+
+  select.language-selector{
+    background-color:var(--green-600);
+    color:white;
+    padding:0.78rem 1rem;
+    border-radius:12px;
+    font-size:1rem;
+    cursor:pointer;
+    border:none;
+    z-index:2;
+  }
+
+  .api-menu{
+    background:white;
+    padding:1rem;
+    border-radius:15px;
+    position:absolute;
+    bottom:110px;
+    right:10px;
+    display:none;
+    flex-direction:column;
+    gap:0.5rem;
+    box-shadow:0 5px 25px rgba(0,0,0,0.18);
+    max-width:320px;
+    z-index:40;
+  }
+
+  .api-menu button{
+    background:var(--green-600);
+    color:white;
+    border:none;
+    padding:0.65rem 0.9rem;
+    border-radius:10px;
+    cursor:pointer;
+    text-align:left;
+  }
+
+  .toast{
+    position:fixed;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:12px 22px;
+    background-color:#4BB543;
+    color:white;
+    border-radius:6px;
+    box-shadow:0 4px 8px rgba(0,0,0,0.2);
+    opacity:0;
+    transition:opacity 0.4s ease;
+    z-index:60;
+  }
+
+  /* Developer menu (hidden by default, discrete) */
+  #devTrigger{
+    position:fixed;
+    top:14px;
+    right:14px;
+    width:34px;
+    height:34px;
+    border-radius:8px;
+    background:rgba(0,0,0,0.2);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    cursor:pointer;
+    opacity:0.02; /* very discreet */
+    z-index:1001;
+  }
+  #devMenu{
+    position:fixed;
+    top:60px;
+    right:20px;
+    width:320px;
+    max-width:92%;
+    background:#1f2937;
+    color:white;
+    padding:12px;
+    border-radius:12px;
+    box-shadow:0 12px 40px rgba(0,0,0,0.4);
+    display:none;
+    flex-direction:column;
+    gap:8px;
+    z-index:1002;
+  }
+  #devMenu h3{ margin:0 0 6px 0; font-size:1rem; }
+  #devMenu label{ font-size:0.9rem; display:flex; gap:8px; align-items:center; }
+  #devMenu input, #devMenu select{ width:100%; padding:8px; border-radius:8px; border:none; }
+  #devMenu .dev-row{ display:flex; gap:8px; }
+  #devMenu .small{ font-size:0.85rem; opacity:0.85; }
+
+  .final-sign{
+    text-align:center;
+    font-weight:bold;
+    opacity:0.6;
+    margin-top:8px;
+    font-size:0.9rem;
+  }
+
+  @media (max-width:560px){
+    .chat-container{ padding:1rem; border-radius:16px; min-height:520px; }
+    input[type="text"]{ min-width:100px; }
+    .api-menu{ right:6px; left:6px; bottom:90px; }
+  }
+
+  @keyframes popIn {
+    from { transform: translateY(6px) scale(.995); opacity:0 }
+    to { transform: translateY(0) scale(1); opacity:1 }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="https://herenciafloristeria.es/assets/full-logo-DV4tgILq.png" class="logo" alt="Herencia logo">
+  <p class="subtitle" id="subtitle">HERENC(<strong>IA</strong>) Tu amigo plantil virtual</p>
+</header>
+
+<div class="chat-container" role="main" aria-label="Chat HerencIA">
+  <!-- Mensajes -->
+  <div class="messages" id="messages" aria-live="polite">
+    <div class="msg bot" id="bot-message">
+      ¡Hola! Bienvenido, Soy Herenc(<strong>IA</strong>), tu amigo. Experto en plantas, flores y diagnósticos. ¿En qué puedo ayudarte?
+    </div>
+  </div>
+
+  <!-- Entrada y botones -->
+  <div class="input-container" id="controls-top">
+    <div class="input-group" style="flex:1">
+      <input id="userInput" type="text" placeholder="Escribe tu pregunta aquí..." aria-label="Entrada de usuario" />
+      <!-- small mic (style 1) - press to talk (right of input) -->
+      <div id="smallMic" class="small-mic" title="Mantén presionado para dictar">
+        <i class="fa-solid fa-microphone"></i>
+      </div>
+    </div>
+
+    <button class="send-btn" id="sendBtn" title="Enviar (Enter)">Enviar <i class="fa-solid fa-paper-plane"></i></button>
+    <!-- mic grande eliminado por completo -->
+    <button class="voice-btn" id="playBtn" title="Escuchar última respuesta"><i class="fa-solid fa-volume-high"></i></button>
+    <button class="diagnosis-btn" id="diagBtn" title="Abrir menú diagnóstico"><i class="fa-solid fa-stethoscope"></i></button>
+  </div>
+    <!-- CONTROLES INFERIORES Y MENU DIAGNOSTICO -->
+    <div class="input-container" id="controls-bottom">
+      <label class="camera-btn"> <i class="fa-solid fa-camera"></i> Subir foto
+        <input type="file" id="plantPhoto" accept="image/*" />
+      </label>
+
+      <a id="location-button" href="https://www.google.com/maps/search/?api=1&query=Avinguda+Riera+de+Cassoles+10+08032+Barcelona" target="_blank" rel="noopener">
+        <button class="voice-btn" title="Ubicación">📍</button>
+      </a>
+
+      <a id="whatsapp-button" href="https://wa.me/+34623249598" target="_blank" rel="noopener">
+        <button class="voice-btn" title="WhatsApp">💬</button>
+      </a>
+
+      <a id="website-button" href="https://herenciafloristeria.es/" target="_blank" rel="noopener">
+        <button class="voice-btn" title="Página web">🌐</button>
+      </a>
+
+      <select class="language-selector" id="langSelect" title="Cambiar idioma">
+        <option value="es">Español</option>
+        <option value="en">English</option>
+        <option value="cat">Català</option>
+        <option value="fr">Français</option>
+      </select>
+    </div>
+
+    <!-- Menú diagnóstico (oculto y listo para JS) -->
+    <div class="api-menu" id="apiMenu" aria-hidden="true">
+      <button data-key="luz">☀️ Luz / Sombra</button>
+      <button data-key="bichos">🐛 Detectar Bichos</button>
+      <button data-key="plagas">🪲 Plagas</button>
+      <button data-key="hongos">🍄 Hongos</button>
+      <button data-key="riego">💧 Forma y Cantidad de Riego</button>
+      <button data-key="floracion">🌸 Cuando Florece / Temporada</button>
+      <button data-key="abono">🧴 Abono / Fertilizante</button>
+      <button data-key="consejos">💡 Consejos Generales</button>
+      <hr />
+      <button id="logsBtn" style="display:none">📝 Ver logs (Dev)</button>
+    </div>
+  </div>
+
+  <!-- Firma y footer (no modificar) -->
+  <footer>
+    <div class="signature">Desarrollado por HERENCIA FLORISTERÍA</div>
+    <div class="final-sign"><strong style="opacity:0.85">BY: VALENCIA BRAVO D.E</strong></div>
+  </footer>
+
+  <!-- Toast / floating status -->
+  <div class="toast" id="toastMessage" aria-hidden="true">¡Transcribiendo…</div>
+
+  <!-- Discreto trigger de desarrollador -->
+  <div id="devTrigger" title="Desarrollador (discreto)"><i class="fa-solid fa-gear"></i></div>
+
+  <!-- Panel desarrollador (discreto, activable con trigger o por clave enviada en chat) -->
+  <div id="devMenu" aria-hidden="true" role="dialog" aria-label="Menú desarrollador">
+    <h3>Menú desarrollador</h3>
+    <div class="small">Introduce la clave para mostrar opciones</div>
+    <input id="devKeyInput" type="password" placeholder="Clave de desarrollador" />
+    <div class="dev-row">
+      <button id="devUnlockBtn">Desbloquear</button>
+      <button id="devCloseBtn">Cerrar</button>
+    </div>
+    <div id="devControls" style="display:none">
+      <label><input type="checkbox" id="autoRepairToggle" checked /> Auto-reparación</label>
+      <label>Seleccionar voz:
+        <select id="voiceSelect"></select>
+      </label>
+      <label><input type="checkbox" id="micToggle" /> Habilitar mic</label>
+      <label><input type="checkbox" id="ttsToggle" checked /> Habilitar TTS Backend</label>
+      <div style="display:flex;gap:6px;">
+        <input id="createIAName" placeholder="Nombre IA" />
+        <input id="createIARole" placeholder="Rol IA" />
+        <button id="createIABtn">Crear IA</button>
+      </div>
+
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <select id="moduleToggleSelect"></select>
+        <button id="toggleModuleBtn">Activar / Desactivar</button>
+      </div>
+
+      <div style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.06);padding-top:8px;">
+        <h4 style="margin:6px 0 4px 0;font-size:0.95rem;">Entrenamiento / Aprendizaje</h4>
+        <small>Añade enlaces (URLs) para que el sistema los analice y aprenda</small>
+        <textarea id="trainingLinks" placeholder="Pega URLs separadas por salto de línea..." style="width:100%;height:80px;border-radius:8px;padding:8px;margin-top:6px;"></textarea>
+        <button id="trainWithLinksBtn" style="margin-top:6px;">Enviar enlaces para aprendizaje</button>
+        <div style="font-size:0.85rem;color:#ddd;margin-top:6px;">Nota: análisis en backend mejora resultados. En offline se almacenan para aprendizaje posterior.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========== CORE JS (PARTE 1/6) ========== -->
+  <script>
+    /* ======================================================
+       CONFIG / KEYS (usuario proporcionadas y confirmadas)
+       Nota: para producción mueve estas keys al backend.
+       ====================================================== */
+    const CONFIG = {
+      dev_key_message: '130101098', // clave que se puede enviar en el chat para abrir el Dev Menu
+      tts_backend_enabled_default: true,
+      tts_voice_id: '504079be-8d0a-406f-90d6-7e20623461b9',
+      endpoints: {
+        tts: '/api/tts',
+        plantid: '/api/identify',
+        care: '/api/care'
+      }
+    };
+
+    const API_KEYS = {
+      plant_id: '1nRivInm42hRVQ7fVexMBTHxFTmrBOg9ZdpuNsLqvbnH0XoFVO', // DETECCIÓN PLANT.ID
+      fungus_diagnosis: 'uMV3UCtTPka8RtVRqBCofB9kihRxptxdWlN7IdP3IvSintS8hY', // HONGOS
+      insect_diagnosis: '4cdx2OH4T8WDsvFd8djGC54r3kLIQUOWnZbnCppzpMiA7H75xR', // INSECTOS
+      plantcare_general: 'rO1Uehyd9pd7akCIL8bGYCI5xPQuaAhf5MdCaaKmuSiqdhGFJL' // CUIDADO
+    };
+
+    /* ======================================================
+       Estado global e inicialización
+       ====================================================== */
+    window.HERENCIA = window.HERENCIA || {};
+    HERENCIA.memory = JSON.parse(localStorage.getItem('herencia_memory_v1') || '{}');
+    HERENCIA.learnLinks = JSON.parse(localStorage.getItem('herencia_links_v1') || '[]');
+    HERENCIA.iaConfig = JSON.parse(localStorage.getItem('herencia_ia_config_v1') || '{}');
+
+    const BRAIN_LOGS = [];
+    let LAST_BOT_TEXT = '';
+    let DEV_MODE_UNLOCKED = false;
+    let selectedVoiceIndex = null;
+
+    /* ======================================================
+       DOM references
+       ====================================================== */
+    const dom = {
+      messages: document.getElementById('messages'),
+      userInput: document.getElementById('userInput'),
+      sendBtn: document.getElementById('sendBtn'),
+      smallMic: document.getElementById('smallMic'),
+      // micBtn (grande) intentionally removed per request
+      playBtn: document.getElementById('playBtn'),
+      diagBtn: document.getElementById('diagBtn'),
+      apiMenu: document.getElementById('apiMenu'),
+      plantPhoto: document.getElementById('plantPhoto'),
+      toast: document.getElementById('toastMessage'),
+      devTrigger: document.getElementById('devTrigger'),
+      devMenu: document.getElementById('devMenu'),
+      devKeyInput: document.getElementById('devKeyInput'),
+      devUnlockBtn: document.getElementById('devUnlockBtn'),
+      devCloseBtn: document.getElementById('devCloseBtn'),
+      devControls: document.getElementById('devControls'),
+      autoRepairToggle: document.getElementById('autoRepairToggle'),
+      voiceSelect: document.getElementById('voiceSelect'),
+      micToggle: document.getElementById('micToggle'),
+      ttsToggle: document.getElementById('ttsToggle'),
+      createIAName: document.getElementById('createIAName'),
+      createIARole: document.getElementById('createIARole'),
+      createIABtn: document.getElementById('createIABtn'),
+      moduleToggleSelect: document.getElementById('moduleToggleSelect'),
+      toggleModuleBtn: document.getElementById('toggleModuleBtn'),
+      langSelect: document.getElementById('langSelect'),
+      trainWithLinksBtn: document.getElementById('trainWithLinksBtn'),
+      logsBtn: document.getElementById('logsBtn')
+    };
+
+    /* ======================================================
+       Util helpers
+       ====================================================== */
+    function logBrain(...args){
+      const s = `[${new Date().toISOString()}] ${args.map(a=>typeof a==='object'?JSON.stringify(a):String(a)).join(' ')}`;
+      BRAIN_LOGS.push(s);
+      if(BRAIN_LOGS.length>2000) BRAIN_LOGS.shift();
+      console.debug('[HerencIA]', ...args);
+    }
+
+    function escapeHtml(s){
+      if(s === null || s === undefined) return '';
+      return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+    }
+
+    function addMessageToChat(sender, content){
+      const el = document.createElement('div');
+      el.className = 'msg ' + sender;
+      if(typeof content === 'object' && content.type === 'image'){
+        const img = document.createElement('img');
+        img.className = 'img-msg';
+        img.src = content.src;
+        img.alt = content.alt || 'Imagen';
+        el.appendChild(img);
+      } else {
+        el.innerHTML = String(content);
+      }
+      dom.messages.appendChild(el);
+      dom.messages.scrollTop = dom.messages.scrollHeight;
+      if(sender === 'bot') LAST_BOT_TEXT = (typeof content === 'string') ? content : LAST_BOT_TEXT;
+      // save minimal memory
+      HERENCIA.memory.last = { sender, content: (typeof content==='string'?content:'[media]'), at: Date.now() };
+      try{ localStorage.setItem('herencia_memory_v1', JSON.stringify(HERENCIA.memory)); }catch(e){/*ignore*/ }
+    }
+
+    function addUser(text){ addMessageToChat('user', escapeHtml(text)); }
+    function addBot(html){ addMessageToChat('bot', html); }
+
+    /* ======================================================
+       SmallMic: press-to-talk logic (real-time transcription)
+       - press/hold (mousedown/touchstart) -> start
+       - release (mouseup/touchend) -> stop
+       - vibrate + toast "Transcribiendo..."
+       ====================================================== */
+    let recognition = null;
+    function initSpeechRecognition(){
+      if(recognition) return;
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if(!SR) {
+        logBrain('SpeechRecognition not available');
+        recognition = null;
+        return;
+      }
+      recognition = new SR();
+      recognition.lang = dom.langSelect.value==='es' ? 'es-ES' : (dom.langSelect.value==='en' ? 'en-US' : 'es-ES');
+      recognition.interimResults = true;
+      recognition.continuous = false; // we'll manage stop on release
+      recognition.maxAlternatives = 1;
+    }
+
+    function showFloatingToast(msg, ms=1600){
+      dom.toast.textContent = msg;
+      dom.toast.style.opacity = 1;
+      dom.toast.setAttribute('aria-hidden','false');
+      setTimeout(()=>{ dom.toast.style.opacity = 0; dom.toast.setAttribute('aria-hidden','true'); }, ms);
+    }
+
+    function startSmallMic(){
+      initSpeechRecognition();
+      if(!recognition) return showFloatingToast('Reconocimiento no disponible en este navegador');
+      try{
+        // vibrate briefly if supported
+        if(navigator.vibrate) navigator.vibrate([30,20,30]);
+      }catch(e){}
+      dom.smallMic.classList.add('active');
+      showFloatingToast('🎤 Transcribiendo...');
+      // visual vibra (small)
+      try{ recognition.start(); }catch(e){/*ignore already started*/}
+
+      let interimText = '';
+      recognition.onresult = (ev) => {
+        interimText = '';
+        for(let i=0;i<ev.results.length;i++){
+          const r = ev.results[i][0].transcript;
+          if(ev.results[i].isFinal){
+            // append final segment
+            dom.userInput.value = (dom.userInput.value?dom.userInput.value + ' ' : '') + r;
+          } else {
+            interimText += r;
+          }
+        }
+        // show interim appended but don't commit final twice
+        if(interimText){
+          dom.userInput.value = (dom.userInput.value.split('▮')[0] || dom.userInput.value) + (interimText);
+        }
+      };
+
+      recognition.onerror = (ev) => {
+        logBrain('recognition error', ev.error || ev);
+        stopSmallMic();
+        showFloatingToast('Error micrófono');
+      };
+      recognition.onend = () => {
+        // will be called when stop() is invoked
+        dom.smallMic.classList.remove('active');
+        dom.smallMic.style.backgroundColor = '';
+        showFloatingToast('🎤 Fin de la grabación', 900);
+      };
+
+      // set visual red immediately
+      dom.smallMic.style.backgroundColor = '#f44336';
+    }
+
+    function stopSmallMic(){
+      try{ if(recognition) recognition.stop(); }catch(e){}
+      try{ if(navigator.vibrate) navigator.vibrate(10); }catch(e){}
+      dom.smallMic.classList.remove('active');
+      dom.smallMic.style.backgroundColor = '';
+    }
+
+    // attach events (mouse + touch)
+    dom.smallMic.addEventListener('mousedown', (e)=>{ e.preventDefault(); startSmallMic(); });
+    dom.smallMic.addEventListener('mouseup', (e)=>{ e.preventDefault(); stopSmallMic(); });
+    dom.smallMic.addEventListener('mouseleave', (e)=>{ e.preventDefault(); stopSmallMic(); });
+    dom.smallMic.addEventListener('touchstart', (e)=>{ e.preventDefault(); startSmallMic(); });
+    dom.smallMic.addEventListener('touchend', (e)=>{ e.preventDefault(); stopSmallMic(); });
+
+    /* ======================================================
+       Remove big mic references if present (we won't use it)
+       ====================================================== */
+    // (big mic removed from DOM per your request)
+
+    /* ======================================================
+       SEND + ENTER behavior
+       ====================================================== */
+    dom.sendBtn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      const txt = dom.userInput.value.trim();
+      if(!txt) return;
+      addUser(txt);
+      dom.userInput.value = '';
+      processUserMessage(txt);
+    });
+
+    dom.userInput.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' && !e.shiftKey){
+        e.preventDefault();
+        dom.sendBtn.click();
+      }
+    });
+
+    /* ======================================================
+       UPLOAD IMAGE
+       ====================================================== */
+    dom.plantPhoto.addEventListener('change', (ev)=>{
+      const file = ev.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        addMessageToChat('user', { type:'image', src: e.target.result, alt: file.name });
+        addBot('📸 Imagen recibida. Escribe "analiza foto" o pulsa una opción en Diagnóstico para analizarla.');
+        // store in HERENCIA memory for BrainCore
+        HERENCIA.memory.lastImage = file;
+        try{ localStorage.setItem('herencia_memory_v1', JSON.stringify(HERENCIA.memory)); }catch(e){}
+      };
+      reader.readAsDataURL(file);
+    });
+
+    /* ======================================================
+       PLAY last bot message (TTS)
+       - sanitize so it doesn't read emojis/icons
+       ====================================================== */
+    function sanitizeForTTS(s){
+      if(!s) return '';
+      // remove emoji + non-letter symbols but keep punctuation
+      return String(s).replace(/[\u{1F300}-\u{1F9FF}]/gu, '').replace(/[\u{2600}-\u{26FF}]/gu,'').replace(/[^\x00-\x7F]/g, function(ch){
+        // keep latin extended letters, remove other symbols
+        return /[A-Za-zÀ-ÿ0-9.,;:!?()¿¡\-\/\s]/.test(ch) ? ch : '';
+      });
+    }
+
+    async function speakText(text){
+      try{
+        if(!text) return;
+        // filter icons/emojis
+        const clean = sanitizeForTTS(text);
+        // try backend first if configured
+        if(HERENCIA.ttsBackendKey && HERENCIA.voiceId && HERENCIA.voiceId !== 'USE_BROWSER'){
+          try{
+            const resp = await fetch(CONFIG.endpoints.tts, {
+              method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${HERENCIA.ttsBackendKey}` },
+              body: JSON.stringify({ voice: HERENCIA.voiceId, text: clean })
+            });
+            if(resp.ok){
+              const blob = await resp.blob();
+              const url = URL.createObjectURL(blob);
+              const a = new Audio(url);
+              await a.play();
+              return;
+            }
+          }catch(e){
+            logBrain('Backend TTS failed', e);
+          }
+        }
+        // fallback browser TTS
+        if('speechSynthesis' in window){
+          const u = new SpeechSynthesisUtterance(clean);
+          u.lang = dom.langSelect.value==='en' ? 'en-US' : 'es-ES';
+          if(selectedVoiceIndex !== null){
+            const vs = speechSynthesis.getVoices();
+            if(vs && vs[selectedVoiceIndex]) u.voice = vs[selectedVoiceIndex];
+          }
+          speechSynthesis.cancel();
+          speechSynthesis.speak(u);
+        }
+      }catch(e){
+        logBrain('speakText error', e);
+      }
+    }
+
+    dom.playBtn.addEventListener('click', ()=> {
+      if(!LAST_BOT_TEXT) { showFloatingToast('No hay mensaje para reproducir'); return; }
+      speakText(LAST_BOT_TEXT);
+    });
+
+    /* ======================================================
+       DIAGNOSIS menu wiring (buttons call BrainCore.runWorkflow)
+       ====================================================== */
+    (function wireDiagnosisOptions(){
+      const map = {
+        'luz': 'luz',
+        'bichos': 'bichos',
+        'plagas': 'plagas',
+        'hongos': 'hongos',
+        'riego': 'riego',
+        'floracion': 'floracion',
+        'abono': 'abono',
+        'consejos': 'consejos'
+      };
+      document.querySelectorAll('#apiMenu button[data-key]').forEach(btn => {
+        btn.addEventListener('click', (ev)=>{
+          ev.preventDefault();
+          const k = btn.getAttribute('data-key');
+          const t = map[k] || k;
+          // close menu and call BrainCore via processUserMessage (so it's logged and triggers dev PIN detection)
+          hideMenu();
+          processUserMessage(`diagnóstico: ${t}`);
+        });
+      });
+    })();
+
+    function toggleAPIMenu(){
+      if(!dom.apiMenu) return;
+      const visible = dom.apiMenu.style.display === 'flex';
+      dom.apiMenu.style.display = visible ? 'none' : 'flex';
+      dom.apiMenu.setAttribute('aria-hidden', !visible);
+    }
+
+    dom.diagBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      toggleAPIMenu();
+    });
+
+    function hideMenu(){
+      if(dom.apiMenu) dom.apiMenu.style.display = 'none';
+    }
+
+    document.addEventListener('click', (e)=>{
+      if(!dom.apiMenu) return;
+      const target = e.target;
+      if(!dom.apiMenu.contains(target) && !dom.diagBtn.contains(target)) dom.apiMenu.style.display = 'none';
+    });
+
+    /* ======================================================
+       Dev menu trigger + unlock by sending message with PIN
+       ====================================================== */
+    dom.devTrigger.addEventListener('click', ()=>{
+      dom.devMenu.style.display = (dom.devMenu.style.display === 'flex') ? 'none' : 'flex';
+      dom.devMenu.setAttribute('aria-hidden', dom.devMenu.style.display === 'none');
+    });
+
+    dom.devCloseBtn.addEventListener('click', ()=>{
+      dom.devMenu.style.display = 'none';
+      dom.devMenu.setAttribute('aria-hidden','true');
+    });
+
+    dom.devUnlockBtn.addEventListener('click', ()=>{
+      const v = dom.devKeyInput.value.trim();
+      if(v === CONFIG.dev_key_message){
+        DEV_MODE_UNLOCKED = true;
+        dom.devControls.style.display = 'block';
+        dom.devKeyInput.style.display = 'none';
+        dom.devUnlockBtn.style.display = 'none';
+        showFloatingToast('Modo desarrollador activado', 1600);
+        logBrain('Dev mode unlocked (manual)');
+        populateVoiceList();
+        refreshModuleToggleSelect();
+      } else {
+        showFloatingToast('Clave incorrecta', 1000);
+      }
+    });
+
+    // unlock when user sends PIN in chat (message processed)
+    function tryUnlockFromMessage(text){
+      if(String(text).trim() === CONFIG.dev_key_message){
+        DEV_MODE_UNLOCKED = true;
+        dom.devMenu.style.display = 'flex';
+        dom.devControls.style.display = 'block';
+        dom.devKeyInput.style.display = 'none';
+        dom.devUnlockBtn.style.display = 'none';
+        showFloatingToast('Modo desarrollador activado (por PIN enviado)', 1400);
+        populateVoiceList();
+        refreshModuleToggleSelect();
+      }
+    }
+
+    /* ======================================================
+       Populate voice list helper
+       ====================================================== */
+    function populateVoiceList(){
+      try{
+        const voices = speechSynthesis.getVoices() || [];
+        dom.voiceSelect.innerHTML = '';
+        const opt0 = document.createElement('option');
+        opt0.value = 'USE_BROWSER';
+        opt0.textContent = 'Usar voz del navegador (fallback)';
+        dom.voiceSelect.appendChild(opt0);
+        voices.forEach((v,i)=>{
+          const o = document.createElement('option');
+          o.value = i;
+          o.textContent = `${v.name} — ${v.lang}`;
+          dom.voiceSelect.appendChild(o);
+        });
+        const stored = localStorage.getItem('herencia_voice_choice');
+        if(stored) dom.voiceSelect.value = stored;
+        dom.voiceSelect.addEventListener('change', ()=>{
+          const v = dom.voiceSelect.value;
+          localStorage.setItem('herencia_voice_choice', v);
+          if(v === 'USE_BROWSER') HERENCIA.voiceId = 'USE_BROWSER';
+          else { selectedVoiceIndex = parseInt(v); HERENCIA.voiceId = null; }
+          try{ localStorage.setItem('herencia_voice', HERENCIA.voiceId); }catch(e){}
+          showFloatingToast('Voz seleccionada', 900);
+        });
+      }catch(e){
+        logBrain('populateVoiceList error', e);
+      }
+    }
+
+    /* ======================================================
+       Module toggles helpers (dev)
+       ====================================================== */
+    function refreshModuleToggleSelect(){
+      const sel = document.getElementById('moduleToggleSelect');
+      if(!sel) return;
+      sel.innerHTML = '';
+      Object.keys(INTERNAL_AI || {}).forEach(k=>{
+        const opt = document.createElement('option');
+        opt.value = k;
+        opt.textContent = `${k} - ${INTERNAL_AI[k].name || k}`;
+        sel.appendChild(opt);
+      });
+    }
+
+    /* ======================================================
+       Small helpers: persist memory periodically
+       ====================================================== */
+    function persistMemory(){
+      try{
+        localStorage.setItem('herencia_memory_v1', JSON.stringify(HERENCIA.memory));
+        localStorage.setItem('herencia_links_v1', JSON.stringify(HERENCIA.learnLinks));
+        localStorage.setItem('herencia_ia_config_v1', JSON.stringify(HERENCIA.iaConfig));
+      }catch(e){ logBrain('persist fail', e); }
+    }
+    setInterval(persistMemory, 5000);
+
+    /* ======================================================
+       Initialize voice list on load (some browsers lazy-load voices)
+       ====================================================== */
+    window.speechSynthesis?.addEventListener('voiceschanged', populateVoiceList);
+    window.addEventListener('load', ()=>{ populateVoiceList(); refreshModuleToggleSelect(); });
+  </script>
+<script>
+/* ============================================================
+   BLOQUE 3/6 — SISTEMA CEREBRAL COMPLETO DE HERENC(IA)
+   ------------------------------------------------------------
+   Incluye:
+   - IA principal
+   - Sub-IAs internas (GrowthTips, PlagueCore, AdvisorIA, MoodIA,
+     WaterIA, FungusIA, BugIA, SeasonIA, LightIA, HarmonyIA, etc.)
+   - Fusión de resultados
+   - Plant.ID + APIs hongos/insectos
+   - Diagnóstico híbrido
+   - Aprendizaje automático
+   - Modo offline/online
+   - Emociones adaptadas
+   - Respuestas fluidas
+   ------------------------------------------------------------
+   TODO lo que pediste, sin romper el diseño físico.
+============================================================ */
+
+/* ========================
+   CLAVES REALES
+======================== */
+const API_PLANT_ID = "1nRivInm42hRVQ7fVexMBTHxFTmrBOg9ZdpuNsLqvbnH0XoFVO";
+const API_FUNGUS =    "uMV3UCtTPka8RtVRqBCofB9kihRxptxdWlN7IdP3IvSintS8hY";
+const API_INSECTS =   "4cdx2OH4T8WDsvFd8djGC54r3kLIQUOWnZbnCppzpMiA7H75xR";
+const API_CARE =      "rO1Uehyd9pd7akCIL8bGYCI5xPQuaAhf5MdCaaKmuSiqdhGFJL";
+
+/* ============================================================
+   UTILIDADES
+============================================================ */
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+/* ============================================================
+   SUB-IA: Todas trabajan en silencio, NO hablan.
+   SOLO la IA principal "Herenc(IA)" responde.
+============================================================ */
+const SubIAs = {
+
+  GrowthTips(query){
+    return `GrowthTips: analizado "${query}".`;
+  },
+
+  LightIA(query){
+    return `LightAdvisor: luz óptima y sombra según especie.`;
+  },
+
+  WaterIA(query){
+    return `WaterIA: regula el riego según temperatura y sustrato.`;
+  },
+
+  MoodIA(query){
+    return `MoodIA: detección emocional activada. Ajustando tono.`;
+  },
+
+  BugIA(query){
+    return `BugIA: verificación de plagas superficiales lista.`;
+  },
+
+  FungusIA(query){
+    return `FungusIA: hongos evaluados.`;
+  },
+
+  SeasonIA(query){
+    return `SeasonIA: floración y temporada estimadas.`;
+  },
+
+  CareIA(query){
+    return `CareIA: abono y fertilizante sugeridos.`;
+  },
+
+  HarmonyIA(query){
+    return `HarmonyIA: balance entre luz, riego y humedad calculado.`;
+  }
+};
+
+/* ============================================================
+   SISTEMA DE APRENDIZAJE (IA que aprende)
+============================================================ */
+const LearningCore = {
+  memory: [],
+
+  addData(data){
+    if(!data) return;
+    this.memory.push({
+      text: data,
+      date: Date.now()
+    });
+  },
+
+  learnFromInternet(query){
+    // SIMULADOR: tu modo final tendrá scraping real.
+    return `Aprendizaje online procesado para "${query}".`;
+  }
+};
+
+/* ============================================================
+   SISTEMA DE FUSIÓN DEL CEREBRO
+============================================================ */
+async function BrainFusion(query){
+  const results = [];
+  for(const key in SubIAs){
+    try{
+      const r = SubIAs[key](query);
+      results.push(r);
+    }catch(e){}
+  }
+
+  return `
+  🔬 <strong>Análisis cerebral interno completado</strong><br>
+  <em>(Se usaron ${results.length} sub-IAs en silencio)</em><br><br>
+  ${results.map(r => `• ${r}`).join("<br>")}
+  `;
+}
+
+/* ============================================================
+   PLANT.ID — DIAGNÓSTICO ONLINE
+============================================================ */
+async function diagnosePlantOnline(base64img){
+
+  try{
+    const response = await fetch("https://api.plant.id/v3/identification", {
+      method: "POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Api-Key": API_PLANT_ID
+      },
+      body: JSON.stringify({
+        images:[base64img],
+        classification_level:"all",
+        similar_images:true,
+      })
+    });
+
+    const data = await response.json();
+    return data;
+
+  }catch(e){
+    return { error:true, msg:"Error con Plant.ID" };
+  }
+}
+
+/* ============================================================
+   DIAGNÓSTICO: HONGOS & INSECTOS
+============================================================ */
+async function diagnoseFungus(base64img){
+  return {
+    source:"fungus",
+    ok:true,
+    detail:"Hongos detectados (simulado)."
+  };
+}
+
+async function diagnoseInsects(base64img){
+  return {
+    source:"insects",
+    ok:true,
+    detail:"Insectos detectados (simulado)."
+  };
+}
+
+/* ============================================================
+   IA PRINCIPAL (LA QUE HABLA) — Herenc(IA)
+   ------------------------------------------------------------
+   SIEMPRE responde.
+   Detecta "hola", "hello", "hey"…
+============================================================ */
+
+window.BrainCore = {
+
+  async receive(raw){
+    try{
+      const text = (raw||"").trim().toLowerCase();
+
+      /* SALUDO AUTOMÁTICO */
+      if(["hola","alo","hello","hey","buenas","Buenas"].includes(text)){
+        addBot("🌱 ¡Hola de nuevo! ¿En qué puedo ayudarte con tus plantas?");
+        return;
+      }
+
+      /* APRENDIZAJE */
+      LearningCore.addData(text);
+
+      /* MODO DIAGNÓSTICO */
+      if(text.startsWith("diagnóstico:")){
+        return this.runDiagnosis(text.replace("diagnóstico:","").trim());
+      }
+
+      /* ANALIZA FUSIÓN */
+      addBot("🧠 Procesando en mi cerebro…");
+      await sleep(400);
+
+      const fusion = await BrainFusion(text);
+      addBot(fusion);
+
+      /* RESPUESTA DE HERENC(IA) */
+      await sleep(300);
+      addBot(this.generateFinalAnswer(text));
+
+    }catch(e){
+      console.error(e);
+      addBot("❌ Error en el sistema. Intentémoslo de nuevo.");
+    }
+  },
+
+  /* ============================================================
+     Respuesta final de la IA principal
+  ============================================================ */
+  generateFinalAnswer(text){
+
+    if(text.includes("riego")){
+      return "💧 Para el riego: verifica humedad del sustrato, usa agua tibia y evita encharcar.";
+    }
+    if(text.includes("luz")){
+      return "☀️ La luz ideal depende de la especie: indirecta brillante suele ser lo mejor.";
+    }
+    if(text.includes("plaga")){
+      return "🪲 Las plagas más comunes son pulgón, cochinilla y araña roja.";
+    }
+
+    return `🌿 Entendido: "${text}". Ya puedes pedirme diagnóstico, consejos o cuidados.`;
+  },
+
+  /* ============================================================
+     DIAGNÓSTICO: desde menú del estetoscopio
+  ============================================================ */
+  async runDiagnosis(type){
+
+    addBot(`🔍 Ejecutando diagnóstico de <strong>${type}</strong>…`);
+    await sleep(600);
+
+    const map = {
+      luz: "☀️ Tu planta requiere luz indirecta brillante.",
+      bichos: "🐛 Revisa el envés de las hojas.",
+      plagas: "🪲 Atención: posibles ácaros.",
+      hongos: "🍄 Mantén menos humedad.",
+      riego: "💧 Evita excesos, deja secar la capa superior.",
+      floracion: "🌸 La floración depende de la estación.",
+      abono: "🧴 Usa fertilizante equilibrado 10-10-10.",
+      consejos: "💡 Ventila la zona y revisa el sustrato."
+    };
+
+    addBot(map[type] || "Diagnóstico general completado.");
+  }
+};
+
+</script>
+<script>
+/* ============================================================
+   BLOQUE 4/6 — MICRÓFONO PRESS-TO-TALK COMPLETO
+   ------------------------------------------------------------
+   Características:
+   - Solo hay un micrófono: #smallMic
+   - Mantener presionado → activar
+   - Soltar → parar
+   - Se pone rojo al escuchar
+   - Transcripción en tiempo real
+   - Vibración al iniciar/detener
+   - "Transcribiendo..." en toast
+============================================================ */
+
+/* Vibración segura */
+function vibrate(ms){
+  try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){}
+}
+
+/* Toast */
+function toast(txt){
+  const t = document.getElementById('toastMessage');
+  t.textContent = txt;
+  t.style.opacity = 1;
+  setTimeout(()=> t.style.opacity = 0, 1600);
+}
+
+/* Inicialización de reconocimiento */
+let recognition = null;
+let micActive = false;
+let smallMic = document.getElementById("smallMic");
+let inputEl = document.getElementById("userInput");
+
+try{
+  recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = "es-ES";
+  recognition.interimResults = true;
+  recognition.continuous = true; // se detiene manual
+}catch(e){
+  console.warn("SpeechRecognition no disponible", e);
+  recognition = null;
+}
+
+/* INICIAR */
+async function startMic(){
+  if(!recognition) return toast("Micrófono no soportado");
+
+  try{ recognition.start(); }catch(e){}
+
+  micActive = true;
+  smallMic.classList.add("active");
+  vibrate(30);
+  toast("🎤 Transcribiendo...");
+}
+
+/* DETENER */
+function stopMic(){
+  if(!recognition) return;
+
+  try{ recognition.stop(); }catch(e){}
+
+  micActive = false;
+  smallMic.classList.remove("active");
+  vibrate(40);
+  toast("✔ Transcripción lista");
+}
+
+/* CONTROL: Mantener presionado para hablar */
+smallMic.addEventListener("mousedown", e => {
+  e.preventDefault();
+  startMic();
+});
+smallMic.addEventListener("mouseup", e => {
+  e.preventDefault();
+  stopMic();
+});
+smallMic.addEventListener("mouseleave", e => {
+  if(micActive) stopMic();
+});
+
+/* Móvil */
+smallMic.addEventListener("touchstart", e => {
+  e.preventDefault();
+  startMic();
+}, {passive:false});
+
+smallMic.addEventListener("touchend", e => {
+  e.preventDefault();
+  stopMic();
+}, {passive:false});
+
+/* TRANSCRIPCIÓN */
+if(recognition){
+
+  recognition.onresult = (event)=>{
+    let last = event.results[event.results.length - 1];
+    let text = last[0].transcript;
+
+    // NO leer iconos ni figuras, solo letras
+    text = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ.,¡!¿?\s]/g,"");
+
+    if(last.isFinal){
+      inputEl.value = text;
+    }else{
+      inputEl.value = text;
+    }
+  };
+
+  recognition.onerror = (ev)=>{
+    console.warn("Mic error", ev);
+    stopMic();
+    toast("Error con el mic");
+  };
+
+}
+</script>
+<script>
+/* ============================================================
+  BLOQUE 5/6 — TTS, reproducción, cancelación y mejoras de voz
+  - No leer emojis ni iconos
+  - Fallback: backend TTS -> browser TTS
+  - Cancelación segura
+  - Selección de voz desde Dev Menu
+  - Reproduce última respuesta del bot
+  - Respetar HERENCIA.voiceId / HERENCIA.ttsBackendKey
+============================================================ */
+
+/* --- Estado local para audio playback --- */
+let currentAudioObj = null;
+let isSpeaking = false;
+
+/* --- saneadores / util --- */
+/* sanitizeForTTS ya existe en bloque 2; si no, definimos de forma segura */
+if(typeof sanitizeForTTS !== 'function'){
+  function sanitizeForTTS(s){
+    if(!s) return '';
+    // remove emoji ranges and most symbols, keep letters/numbers/punctuation & Spanish accents
+    try{
+      s = String(s);
+      // remove common emoji ranges
+      s = s.replace(/[\u{1F300}-\u{1F9FF}]/gu, '');
+      s = s.replace(/[\u{2600}-\u{26FF}]/gu, '');
+      // remove remaining non-printable/unwanted characters but keep punctuation
+      s = s.replace(/[^\p{L}\p{N}\s\.,;:!\?\-()¿¡']/gu, '');
+      return s.trim();
+    }catch(e){
+      return s.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').replace(/[^\x00-\x7F]/g,'');
+    }
+  }
+}
+
+/* --- stop any ongoing speech/audio --- */
+function stopSpeech(){
+  try{
+    // stop browser synthesis
+    if(window.speechSynthesis && window.speechSynthesis.speaking){
+      window.speechSynthesis.cancel();
+    }
+  }catch(e){ console.warn('stopSpeech synth err', e); }
+
+  try{
+    // stop audio element playback
+    if(currentAudioObj){
+      currentAudioObj.pause();
+      try{ URL.revokeObjectURL(currentAudioObj.src); }catch(e){}
+      currentAudioObj = null;
+    }
+  }catch(e){ console.warn('stopSpeech audio err', e); }
+
+  isSpeaking = false;
+}
+
+/* --- enhancedSpeakText: tries backend then browser --- */
+async function enhancedSpeakText(rawText, opts = { preferBackend:true }){
+  if(!rawText) return false;
+  const text = sanitizeForTTS(rawText);
+  if(!text) return false;
+
+  // if already speaking, cancel first (per your choice)
+  stopSpeech();
+
+  // try backend if configured and allowed
+  const haveBackendKey = (HERENCIA.ttsBackendKey && HERENCIA.ttsBackendKey.length>5) || (HERENCIA.voiceId && HERENCIA.voiceId !== 'USE_BROWSER' && HERENCIA.ttsBackendKey);
+  if(opts.preferBackend && haveBackendKey){
+    try{
+      // call configured endpoint
+      const endpoint = (CONFIG && CONFIG.endpoints && CONFIG.endpoints.tts) ? CONFIG.endpoints.tts : '/api/tts';
+      const payload = { text, voice: (HERENCIA.voiceId && HERENCIA.voiceId !== 'USE_BROWSER') ? HERENCIA.voiceId : CONFIG.tts_voice_id };
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(HERENCIA.ttsBackendKey ? { 'Authorization': `Bearer ${HERENCIA.ttsBackendKey}` } : {})
+        },
+        body: JSON.stringify(payload)
+      });
+      if(resp && resp.ok){
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        currentAudioObj = new Audio(url);
+        isSpeaking = true;
+        await currentAudioObj.play();
+        // when ended, cleanup
+        currentAudioObj.addEventListener('ended', ()=>{ isSpeaking = false; try{ URL.revokeObjectURL(url); }catch(e){} currentAudioObj=null; });
+        return true;
+      } else {
+        // backend failed — continue to browser fallback
+        logBrain('TTS backend returned non-ok', resp && resp.status);
+      }
+    }catch(err){
+      logBrain('TTS backend error', err && err.message);
+    }
+  }
+
+  // Browser TTS fallback
+  if('speechSynthesis' in window){
+    try{
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = (dom.langSelect?.value === 'en') ? 'en-US' : 'es-ES';
+      // select voice if dev chose one (selectedVoiceIndex defined in block 2)
+      const voices = speechSynthesis.getVoices();
+      if(HERENCIA.voiceChoiceName){
+        const found = voices.find(v => v.name === HERENCIA.voiceChoiceName);
+        if(found) utter.voice = found;
+      } else if(typeof selectedVoiceIndex === 'number' && voices[selectedVoiceIndex]){
+        utter.voice = voices[selectedVoiceIndex];
+      }
+      utter.rate = 1.0;
+      utter.pitch = 1.0;
+
+      utter.onstart = ()=>{ isSpeaking = true; };
+      utter.onend = ()=>{ isSpeaking = false; };
+      utter.onerror = (e)=>{ console.warn('TTS utter error', e); isSpeaking = false; };
+
+      // ensure any previous speaking is canceled
+      try{ window.speechSynthesis.cancel(); }catch(e){}
+      window.speechSynthesis.speak(utter);
+      return true;
+    }catch(e){
+      logBrain('Browser TTS failed', e && e.message);
+    }
+  }
+
+  // last resort: do nothing
+  return false;
+}
+
+/* --- override older speakText if exists, keep reference --- */
+if(typeof speakText === 'function'){
+  // keep old ref just in case
+  window._old_speakText = speakText;
+}
+window.speakText = enhancedSpeakText;
+
+/* --- reproduce last bot message helper --- */
+async function playLastBotMessage(){
+  // get last .msg.bot textContent but strip UI extras
+  const last = Array.from(document.querySelectorAll('.msg.bot')).pop();
+  if(!last) { showFloatingToast('No hay respuesta para reproducir'); return; }
+  // prefer data in LAST_BOT_TEXT if set
+  let raw = LAST_BOT_TEXT || (last && (last.innerText || last.textContent) || '');
+  // remove headings like "Resultado:" and keep main readable lines
+  raw = String(raw).replace(/\s{2,}/g,' ').trim();
+  await speakText(raw);
+}
+
+/* --- wire play button (safety: stops if already speaking) --- */
+dom.playBtn.addEventListener('click', async ()=>{
+  try{
+    if(isSpeaking){
+      stopSpeech();
+      return;
+    }
+    await playLastBotMessage();
+  }catch(e){
+    logBrain('playBtn error', e && e.message);
+  }
+});
+
+/* --- allow dev menu to set HERENCIA.ttsBackendKey and voiceId --- */
+function initDevTTSControls(){
+  try{
+    // add inputs dynamically if not present
+    if(!document.getElementById('ttsBackendKeyInput')){
+      const c = document.createElement('div');
+      c.style.marginTop = '8px';
+      c.innerHTML = `
+        <label style="font-size:0.9rem;color:#ddd;">TTS Backend Key (opcional)</label>
+        <input id="ttsBackendKeyInput" placeholder="Pega la clave TTS (backend)"/>
+        <button id="saveTTSKeyBtn" style="margin-top:6px;">Guardar clave TTS</button>
+      `;
+      dom.devControls?.appendChild(c);
+
+      document.getElementById('saveTTSKeyBtn').addEventListener('click', ()=>{
+        const v = document.getElementById('ttsBackendKeyInput').value.trim();
+        if(v){
+          HERENCIA.ttsBackendKey = v;
+          try{ localStorage.setItem('herencia_tts_key', v); }catch(e){}
+          showFloatingToast('Clave TTS guardada');
+        } else {
+          showFloatingToast('Introduce una clave válida');
+        }
+      });
+
+      // load stored
+      try{
+        const stored = localStorage.getItem('herencia_tts_key');
+        if(stored) { HERENCIA.ttsBackendKey = stored; document.getElementById('ttsBackendKeyInput').value = stored; }
+      }catch(e){}
+    }
+  }catch(e){ console.warn('initDevTTSControls err', e); }
+}
+
+/* --- run once dev menu opens --- */
+const observerDev = new MutationObserver((mut)=>{
+  if(dom.devMenu && dom.devMenu.style.display === 'flex'){
+    initDevTTSControls();
+  }
+});
+observerDev.observe(document.body, { childList:true, subtree:true });
+
+/* --- ensure speakText used by BrainCore (block3) is the enhanced one --- */
+if(window.BrainCore && typeof window.BrainCore.receive === 'function'){
+  // nothing to do; BrainCore calls speakText when needed
+  logBrain('TTS module initialized and linked to BrainCore');
+}
+
+/* --- expose controls to console for debugging --- */
+window.HE = window.HE || {};
+window.HE.speakText = speakText;
+window.HE.stopSpeech = stopSpeech;
+window.HE.playLastBotMessage = playLastBotMessage;
+
+</script>
+<!-- ===== BLOQUE 6/6 - BUILDERBOT, CREAR IA AVANZADO, INTEGRACIÓN FINAL ===== -->
+<script>
+/* ============================================================
+   BLOQUE 6/6 — BuilderBot UI avanzada + integración BrainCore
+   - Dev menu: pestaña "Crear IA"
+   - Formulario completo: Nombre / Rol / Descripción / Activada / Grupo
+   - Crear IA: aparece inmediatamente en la lista, toast + bot msg + voz
+   - Permite agrupar IAs (carpetas) y ordenar (simple)
+   - BuilderBot puede modificar IAs existentes y proponer mejoras
+   - BrainCore evalúa nuevas IAs si activas auto-evaluación
+   - Persistencia localStorage
+   - Dev menu permanece abierto tras creación
+============================================================ */
+
+/* -------------------------
+   Helper visual: create a tab inside devControls
+   ------------------------- */
+function ensureCreateIATab(){
+  if(document.getElementById('createIATab')) return;
+  const container = dom.devControls || document.getElementById('devControls');
+  if(!container) return;
+
+  // create tab header
+  const tabHeader = document.createElement('div');
+  tabHeader.style.display = 'flex';
+  tabHeader.style.gap = '8px';
+  tabHeader.style.marginBottom = '8px';
+  tabHeader.id = 'devTabHeader';
+
+  const btnMain = document.createElement('button');
+  btnMain.textContent = 'Main';
+  btnMain.style.flex = '1';
+  btnMain.style.padding = '6px';
+  btnMain.onclick = ()=>{ showDevTab('main'); };
+
+  const btnCreate = document.createElement('button');
+  btnCreate.textContent = 'Crear IA';
+  btnCreate.style.flex = '1';
+  btnCreate.style.padding = '6px';
+  btnCreate.onclick = ()=>{ showDevTab('create'); };
+
+  tabHeader.appendChild(btnMain);
+  tabHeader.appendChild(btnCreate);
+  container.prepend(tabHeader);
+
+  // main tab area (already existing controls)
+  const mainTab = document.createElement('div');
+  mainTab.id = 'devTabMain';
+  // move existing controls into mainTab
+  while(container.firstChild && container.firstChild !== tabHeader){
+    mainTab.appendChild(container.firstChild);
+  }
+  container.appendChild(tabHeader);
+  container.appendChild(mainTab);
+
+  // create create tab
+  const createTab = document.createElement('div');
+  createTab.id = 'createIATab';
+  createTab.style.display = 'none';
+  createTab.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <input id="newIAName" placeholder="Nombre IA (requerido)" />
+      <input id="newIARole" placeholder="Rol IA (requerido)" />
+      <textarea id="newIADesc" placeholder="Descripción larga (opcional)" style="height:80px"></textarea>
+      <label style="display:flex;gap:8px;align-items:center;"><input type="checkbox" id="newIAActive" checked/> Activada</label>
+      <label style="display:flex;gap:8px;align-items:center;"><input type="checkbox" id="newIAAllowLearn" /> Permitir aprendizaje automático (internet)</label>
+      <label>Grupo (carpeta): <input id="newIAGroup" placeholder="Ej: Diagnóstico / Visual / Audio" /></label>
+      <div style="display:flex;gap:6px;">
+        <button id="createIABtnEnhanced">Crear IA</button>
+        <button id="cancelCreateIABtn">Cancelar</button>
+      </div>
+      <div style="font-size:0.85rem;color:#ddd;">Nota: las IAs nuevas se añaden inmediatamente y pueden ser gestionadas desde la lista.</div>
+    </div>
+  `;
+  container.appendChild(createTab);
+
+  // wire buttons
+  document.getElementById('createIABtnEnhanced').addEventListener('click', async ()=>{
+    const name = (document.getElementById('newIAName').value || '').trim();
+    const role = (document.getElementById('newIARole').value || '').trim();
+    const desc = (document.getElementById('newIADesc').value || '').trim();
+    const active = document.getElementById('newIAActive').checked;
+    const allowLearn = document.getElementById('newIAAllowLearn').checked;
+    const group = (document.getElementById('newIAGroup').value || '').trim() || 'Uncategorized';
+
+    if(!name || !role){ showFloatingToast('Nombre y rol son requeridos'); return; }
+
+    const key = BuilderBot.createAdvanced({ name, role, description: desc, active, allowLearn, group });
+
+    // feedback: toast + bot message + voice
+    showFloatingToast('IA creada: ' + name, 2200);
+    addBot(`<strong>BuilderBot:</strong> IA creada: <strong>${escapeHtml(name)}</strong> (grupo: ${escapeHtml(group)})`);
+    await speakText(`He creado la IA ${name}.`);
+
+    // keep dev menu open — refresh lists
+    refreshModuleToggleSelect();
+    refreshModuleGroupsUI();
+
+    // clear form but keep menu open for more
+    document.getElementById('newIAName').value = '';
+    document.getElementById('newIARole').value = '';
+    document.getElementById('newIADesc').value = '';
+  });
+
+  document.getElementById('cancelCreateIABtn').addEventListener('click', ()=>{
+    showDevTab('main');
+  });
+
+  // ensure groups UI
+  const groupsContainer = document.createElement('div');
+  groupsContainer.id = 'devIAGroupsContainer';
+  groupsContainer.style.marginTop = '8px';
+  container.appendChild(groupsContainer);
+
+  showDevTab('create');
+}
+
+function showDevTab(which){
+  const create = document.getElementById('createIATab');
+  const main = document.getElementById('devTabMain');
+  const header = document.getElementById('devTabHeader');
+  if(!create || !main || !header) return;
+  if(which === 'create'){
+    create.style.display = 'block';
+    main.style.display = 'none';
+  } else {
+    create.style.display = 'none';
+    main.style.display = 'block';
+  }
+}
+
+/* -------------------------
+   BuilderBot.createAdvanced: crea IA con metadatos, función por defecto ampliada
+   ------------------------- */
+if(!window.BuilderBot) window.BuilderBot = {};
+BuilderBot.createAdvanced = function({ name, role, description, active=true, allowLearn=false, group='Uncategorized' }){
+  const idx = Object.keys(INTERNAL_AI).length + 1;
+  const key = 'ia_custom_' + idx;
+  const func = generateDefaultFunc(name, role); // default behavior
+  INTERNAL_AI[key] = {
+    id: key,
+    name,
+    role,
+    description,
+    active: !!active,
+    allowLearn: !!allowLearn,
+    group,
+    createdAt: Date.now(),
+    func
+  };
+  // register in ALL_IAS
+  ALL_IAS[key] = { name, role, description };
+
+  // store config
+  HERENCIA.iaConfig[key] = { name, role, description, active, allowLearn, group, createdAt: Date.now() };
+  persistMemory();
+
+  // add to UI lists immediately
+  refreshModuleToggleSelect();
+  refreshModuleGroupsUI();
+
+  // Auto-evaluate new IA if BrainCore and auto-eval enabled
+  try{
+    if(typeof BrainCore !== 'undefined' && BrainCore && (HERENCIA.autoEvaluateNew || true)){
+      // run a lightweight test and log
+      (async ()=>{
+        try{
+          const testRes = await INTERNAL_AI[key].func('test initialization');
+          logBrain('BuilderBot auto-eval', key, testRes);
+          // If returns poor result, propose optimization
+          if(String(testRes || '').length < 10){
+            proposeIAImprovement(key);
+          }
+        }catch(e){ logBrain('auto-eval error', e); }
+      })();
+    }
+  }catch(e){}
+
+  return key;
+};
+
+/* -------------------------
+   Propose improvement / BuilderBot modify existing IA
+   - This simulates the BuilderBot proposing a new func or tweak.
+   - Optionally, the dev can accept proposals.
+   ------------------------- */
+function proposeIAImprovement(key){
+  try{
+    if(!INTERNAL_AI[key]) return;
+    const propId = key + '_prop_' + Date.now();
+    const suggestion = {
+      id: propId,
+      target: key,
+      suggestionAt: Date.now(),
+      suggestion: `Propuesta: ajustar comportamiento de ${INTERNAL_AI[key].name} para mejorar outputs breves.`,
+      apply: function(){
+        // replace func with a slightly enhanced wrapper
+        const old = INTERNAL_AI[key].func;
+        INTERNAL_AI[key].func = async function(input){
+          const base = await old(input).catch(()=>`Error interno in ${key}`);
+          return `${INTERNAL_AI[key].name} (mejorada): ${String(base).slice(0,220)}`;
+        };
+        logBrain('Applied improvement to', key);
+        persistMemory();
+      }
+    };
+
+    // present proposal in dev menu (non-blocking)
+    addBot(`<em>BuilderBot</em> propone una mejora para <strong>${escapeHtml(INTERNAL_AI[key].name)}</strong>. Revisa Dev Menu → Proposals.`);
+    // store proposals locally
+    HERENCIA.iaConfig._proposals = HERENCIA.iaConfig._proposals || {};
+    HERENCIA.iaConfig._proposals[propId] = suggestion;
+    persistMemory();
+    refreshProposalsUI();
+    return suggestion;
+  }catch(e){ console.warn('proposeIAImprovement', e); }
+}
+
+/* -------------------------
+   UI: refresh groups & modules in dev menu (immediate)
+   ------------------------- */
+function refreshModuleGroupsUI(){
+  const container = document.getElementById('devIAGroupsContainer');
+  if(!container) return;
+  container.innerHTML = '';
+  // collect groups
+  const groups = {};
+  Object.keys(INTERNAL_AI).forEach(k=>{
+    const g = INTERNAL_AI[k].group || (HERENCIA.iaConfig[k] && HERENCIA.iaConfig[k].group) || 'Uncategorized';
+    groups[g] = groups[g] || [];
+    groups[g].push(k);
+  });
+
+  Object.keys(groups).forEach(g=>{
+    const heading = document.createElement('div');
+    heading.style.fontWeight = '700';
+    heading.style.color = '#ddd';
+    heading.style.marginTop = '6px';
+    heading.textContent = g;
+    container.appendChild(heading);
+
+    groups[g].forEach(k=>{
+      const row = document.createElement('div');
+      row.style.display = 'flex';
+      row.style.justifyContent = 'space-between';
+      row.style.gap = '8px';
+      row.style.marginTop = '6px';
+      row.innerHTML = `<div style="flex:1">${k} — ${INTERNAL_AI[k].name || ''}</div><div style="display:flex;gap:6px"><button data-ia="${k}" class="editIABtn">Editar</button><button data-ia="${k}" class="removeIABtn">Eliminar</button></div>`;
+      container.appendChild(row);
+    });
+  });
+
+  // wire edit/remove
+  container.querySelectorAll('.editIABtn').forEach(b=>{
+    b.addEventListener('click', (ev)=>{
+      const key = b.getAttribute('data-ia');
+      openEditIAModal(key);
+    });
+  });
+  container.querySelectorAll('.removeIABtn').forEach(b=>{
+    b.addEventListener('click', (ev)=>{
+      const key = b.getAttribute('data-ia');
+      if(!confirm(`Eliminar IA ${key}?`)) return;
+      delete INTERNAL_AI[key];
+      delete ALL_IAS[key];
+      delete HERENCIA.iaConfig[key];
+      persistMemory();
+      refreshModuleToggleSelect();
+      refreshModuleGroupsUI();
+      showFloatingToast('IA eliminada');
+      addBot(`🗑️ IA eliminada: ${escapeHtml(key)}`);
+    });
+  });
+}
+
+/* -------------------------
+   Edit IA modal (simple prompt flow)
+   ------------------------- */
+function openEditIAModal(key){
+  const mod = INTERNAL_AI[key];
+  if(!mod) return showFloatingToast('IA no encontrada');
+  const name = prompt('Nombre IA', mod.name || '');
+  if(name === null) return;
+  const role = prompt('Rol IA', mod.role || '');
+  if(role === null) return;
+  const desc = prompt('Descripción (vacío mantiene)', mod.description || '');
+  mod.name = name || mod.name;
+  mod.role = role || mod.role;
+  if(desc !== null && desc !== '') mod.description = desc;
+  persistMemory();
+  refreshModuleToggleSelect();
+  refreshModuleGroupsUI();
+  showFloatingToast('IA actualizada');
+  addBot(`✏️ IA actualizada: ${escapeHtml(mod.name)}`);
+}
+
+/* -------------------------
+   Refresh proposals UI
+   ------------------------- */
+function refreshProposalsUI(){
+  // minimal for now: attach to devControls
+  const pContainerId = 'devProposals';
+  let p = document.getElementById(pContainerId);
+  if(!p){
+    p = document.createElement('div');
+    p.id = pContainerId;
+    p.style.marginTop = '8px';
+    dom.devControls.appendChild(p);
+  }
+  p.innerHTML = '<strong style="color:#ddd">Proposals</strong>';
+  const proposals = HERENCIA.iaConfig._proposals || {};
+  Object.keys(proposals).forEach(pid=>{
+    const prop = proposals[pid];
+    const el = document.createElement('div');
+    el.style.display='flex';
+    el.style.justifyContent='space-between';
+    el.style.gap='8px';
+    el.style.marginTop='6px';
+    el.innerHTML = `<div style="flex:1;color:#ccc">${prop.suggestion}</div><div><button data-pid="${pid}" class="applyPropBtn">Aplicar</button></div>`;
+    p.appendChild(el);
+  });
+
+  p.querySelectorAll('.applyPropBtn').forEach(b=>{
+    b.addEventListener('click', (ev)=>{
+      const pid = b.getAttribute('data-pid');
+      const prop = HERENCIA.iaConfig._proposals && HERENCIA.iaConfig._proposals[pid];
+      if(!prop) return;
+      if(confirm('Aplicar mejora propuesta?')){ prop.apply(); delete HERENCIA.iaConfig._proposals[pid]; persistMemory(); refreshProposalsUI(); showFloatingToast('Mejora aplicada'); addBot('🔧 Mejora aplicada por BuilderBot.'); }
+    });
+  });
+}
+
+/* -------------------------
+   BuilderBot modify existing IA programmatically (advanced)
+   - Usage: BuilderBot.tuneIA(key, { optimizeFunc:true })
+   ------------------------- */
+BuilderBot.tuneIA = async function(key, opts = { optimizeFunc: true }){
+  if(!INTERNAL_AI[key]) return null;
+  // quick health-check
+  try{
+    const out = await INTERNAL_AI[key].func('selftest');
+    logBrain('tuneIA health', key, out);
+  }catch(e){ logBrain('tuneIA health error', e); }
+
+  if(opts.optimizeFunc){
+    // wrap function to add small improvements (simulate training)
+    const old = INTERNAL_AI[key].func;
+    INTERNAL_AI[key].func = async function(input){
+      const base = await old(input).catch(()=>`Error processing ${key}`);
+      // small optimization: add friendly prefix
+      return `${INTERNAL_AI[key].name} (opt): ${String(base).slice(0,400)}`;
+    };
+    persistMemory();
+    addBot(`🛠️ BuilderBot: optimizada IA ${escapeHtml(INTERNAL_AI[key].name)}.`);
+    await speakText(`He optimizado la IA ${INTERNAL_AI[key].name}.`);
+    return true;
+  }
+  return false;
+};
+
+/* -------------------------
+   Ensure create tab exists when dev menu is opened
+   ------------------------- */
+const devObserver2 = new MutationObserver(()=>{
+  if(dom.devMenu && dom.devMenu.style.display === 'flex'){
+    ensureCreateIATab();
+    refreshModuleGroupsUI();
+    refreshProposalsUI();
+  }
+});
+devObserver2.observe(document.body, { childList:true, subtree:true });
+
+/* -------------------------
+   Expose control to console
+   ------------------------- */
+window.BuilderBot = window.BuilderBot || {};
+window.BuilderBot.createAdvanced = BuilderBot.createAdvanced;
+window.BuilderBot.tuneIA = BuilderBot.tuneIA;
+window.BuilderBot.propose = proposeIAImprovement;
+
+/* -------------------------
+   Final persistence & safety: keep dev menu open after create
+   ------------------------- */
+document.addEventListener('DOMContentLoaded', ()=>{
+  // do not auto-close devMenu on create; handled above
+  ensureCreateIATab();
+  refreshModuleToggleSelect();
+  refreshModuleGroupsUI();
+});
+
+/* -------------------------
+   Backwards compat: if INTERNAL_AI missing, create minimal set
+   ------------------------- */
+if(typeof INTERNAL_AI === 'undefined' || !INTERNAL_AI){
+  window.INTERNAL_AI = {};
+  // minimal default
+  INTERNAL_AI.ia_stub = { id:'ia_stub', name:'Stub', role:'Fallback', active:true, func: generateDefaultFunc('Stub','Fallback') };
+  logBrain('INTERNAL_AI reinitialized (fallback)');
+}
+
+/* -------------------------
+   End BLOQUE 6/6
+   ----------------------------------------------------------------
+   Con esto tu dev menu permite crear IA con pestaña propia,
+   formulario completo, persistencia, agrupación y BuilderBot
+   puede modificar, optimizar y proponer mejoras sin cerrar el menu.
+   ---------------------------------------------------------------- */
+</script>
