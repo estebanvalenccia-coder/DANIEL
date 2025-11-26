@@ -1,0 +1,65 @@
+#dev-architecture-viewer{
+    position:fixed;
+    top:0;
+    left:0;
+    width:360px;
+    height:100vh;
+    background:#111;
+    color:#fff;
+    padding:10px;
+    display:none;
+    flex-direction:column;
+    z-index:999999;
+    font-family:system-ui;
+    overflow:auto;
+}
+
+.arch-header{
+    display:flex;
+    justify-content:space-between;
+    padding:10px;
+    background:#1a1a1a;
+    border-radius:8px;
+    margin-bottom:10px;
+}
+
+.arch-header button{
+    background:none;
+    border:none;
+    color:white;
+    cursor:pointer;
+    font-size:18px;
+}
+
+.arch-section{
+    background:#1c1c1c;
+    padding:10px;
+    margin-bottom:12px;
+    border-radius:8px;
+}
+
+.arch-section h4{
+    margin:0 0 6px;
+    font-size:14px;
+    opacity:0.85;
+}
+
+.arch-section button{
+    width:100%;
+    padding:6px;
+    background:#222;
+    border:none;
+    border-radius:6px;
+    color:#fff;
+    margin-bottom:6px;
+    cursor:pointer;
+}
+
+.arch-section pre{
+    font-size:11px;
+    background:#000;
+    padding:8px;
+    border-radius:6px;
+    overflow:auto;
+    max-height:200px;
+}
