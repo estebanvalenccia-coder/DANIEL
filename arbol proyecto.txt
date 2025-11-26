@@ -1,0 +1,85 @@
+/HERENCIA_IA
+│
+├── index.html
+├── README.md
+│
+├── /assets
+│   ├── logo.png
+│   ├── bg.jpg
+│   └── icons/
+│       ├── mic.svg
+│       ├── speaker.svg
+│       ├── stethoscope.svg
+│       ├── devmenu.svg
+│       ├── devpro.svg
+│       └── power.svg
+│
+├── /core
+│   ├── superbrian.js
+│   ├── reasoner.js
+│   ├── neurons.json
+│   ├── memory.js
+│   ├── reproduction.js
+│   ├── feeder.js
+│   ├── learning.js
+│   └── ethics.js
+│
+├── /ui
+│   ├── chat.css
+│   ├── chat.js
+│   ├── layout.css
+│   ├── animations.css
+│   ├── devmenu.css
+│   ├── devmenu.js
+│   ├── pro.css
+│   └── pro.js
+│
+├── /audio
+│   ├── stt.js
+│   ├── tts.js
+│   ├── micController.js
+│   └── speakerController.js
+│
+├── /api
+│   ├── plantid.js
+│   ├── trefle.js
+│   ├── cse.js
+│   ├── hongos.js
+│   ├── insectos.js
+│   ├── cuidados.js
+│   └── toxicos.js
+│
+├── /diagnostics
+│   ├── diagnosticoUI.js
+│   ├── diagnosticoEngine.js
+│   └── diagnosticoMenu.js
+│
+├── /lang
+│   ├── es.json
+│   ├── en.json
+│   ├── fr.json
+│   ├── pt.json
+│   └── it.json
+│
+├── /security
+│   ├── masterControl.js
+│   ├── safemode.js
+│   ├── emergency.js
+│   ├── encryption.js
+│   └── firewall.js
+│
+├── /regenerators
+│   ├── regeneradorIA.js
+│   ├── regeneradorSistema.js
+│   ├── regeneradorModulos.js
+│   ├── purificadores.js
+│   └── reselladores.js
+│
+└── /expanders
+    ├── expansorBotanico.js
+    ├── expansorConversacional.js
+    ├── expansorAnalitico.js
+    ├── expansorVisual.js
+    ├── expansorHibrido.js
+    ├── expansorPredictivo.js
+    └── expansorCompleto.js

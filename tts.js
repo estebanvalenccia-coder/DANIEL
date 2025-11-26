@@ -1,26 +1,31 @@
-export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+/* ============================================================
+   HERENCIA IA — TTS (Text To Speech)
+   - Fallback Web Speech API
+//    ============================================================ */
 
-  try {
-    const { text, voice } = req.body;
-    if (!text) return res.status(400).json({ error: "Missing text" });
+export const TTS = {
+  speak(text, { lang="es-ES", rate=1, pitch=1, volume=1 } = {}) {
+    if (!window.speechSynthesis) {
+      console.warn("⚠ TTS: speechSynthesis no soportado.");
+      return false;
+    }
 
-    const voiceToUse = voice || "536f4c29-1fb4-45a4-9bea-efe7b51f46c2";
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.rate = rate;
+    u.pitch = pitch;
+    u.volume = volume;
 
-    const response = await fetch("https://api.superbrain.chat/api/tts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "sb-api-key": process.env.SUPERBRAIN_KEY || "demo-key",
-      },
-      body: JSON.stringify({ text, voice_id: voiceToUse }),
-    });
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+    return true;
+  },
 
-    const audio = await response.arrayBuffer();
-    res.setHeader("Content-Type", "audio/mpeg");
-    return res.send(Buffer.from(audio));
-  } catch (error) {
-    console.error("TTS error:", error);
-    return res.status(500).json({ error: "TTS processing failed" });
+  stop() {
+    if (!window.speechSynthesis) return false;
+    window.speechSynthesis.cancel();
+    return true;
   }
-}
+};
+
+window.TTS = TTS;

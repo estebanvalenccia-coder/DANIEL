@@ -1,0 +1,20 @@
+/* ============================================================
+   HERENC(IA) — layout.css (placeholder del árbol)
+   Si tu UI ya inyecta estilos inline, esto solo cumple estructura.
+   Puedes ampliarlo cuando diseñes UI final.
+   ============================================================ */
+
+:root{
+  --bg: #0d0f12;
+  --panel: #11151a;
+  --panel-2: #1f2937;
+  --text: #eaeaea;
+  --accent: #2563eb;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
